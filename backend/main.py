@@ -1,11 +1,10 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
-import whisper
 import tempfile
 import os
 
-app = FastAPI()
+from .services.transcription_service import transcribe_audio
 
-model = whisper.load_model("base")
+app = FastAPI()
 
 
 @app.get("/health")
@@ -20,14 +19,11 @@ async def create_note(audio_file: UploadFile = File(...)):
         temp_audio_path = temp_audio.name
 
     try:
-        if not os.path.exists(audio_path):
-            raise FileNotFoundError(f"Audio file not found: {audio_path}")
-
-        result = model.transcribe(temp_audio_path)
+        transcript = transcribe_audio(temp_audio_path)
 
         return {
             "filename": audio_file.filename,
-            "transcript": result["text"],
+            "transcript": transcript,
             "message": "transcription complete"
         }
 
