@@ -33,4 +33,12 @@ def get_note(db, note_id):
     )
 
 def delete_note(db, note_id):
-    pass
+    note = get_note(db, note_id)
+
+    if note is None:
+        return None
+
+    db.delete(note)
+    db.commit()
+
+    return note

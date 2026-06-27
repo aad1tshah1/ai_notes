@@ -85,3 +85,12 @@ def get_note_by_id(note_id: str, db: Session = Depends(get_db)):
         },
         "created_at": note.created_at,
     }
+
+@app.delete("/notes/{note_id}")
+def delete_note_by_id(note_id: str, db: Session = Depends(get_db)):
+    note = delete_note(db, note_id)
+
+    if not note:
+        raise HTTPException(status_code=404, detail="Note not found")
+
+    return {"message": "Note deleted successfully"}
