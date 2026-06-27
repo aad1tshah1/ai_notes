@@ -18,11 +18,15 @@ def save_note(db, transcript, notes):
     return note
 
 
-def list_notes():
+def list_notes(db):
+    return (
+        db.query(Note)
+        .order_by(Note.created_at.desc())
+        .all()
+    )
+    
+def get_note(db, note_id):
     pass
 
-def get_note(note_id):
-    pass
-
-def delete_note(note_id):
+def delete_note(db, note_id):
     pass

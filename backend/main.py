@@ -6,7 +6,8 @@ import os
 from services.transcription_service import transcribe_audio
 from services.summarisation_service import generate_meeting_notes
 from core.database import get_db
-from repositories.note_repository import save_note
+from repositories.note_repository import save_note, list_notes, get_note, delete_note
+
 
 app = FastAPI()
 
@@ -49,3 +50,21 @@ async def create_note(audio_file: UploadFile = File(...), db: Session = Depends(
 
     finally:
         os.remove(temp_audio_path)
+
+@app.get("/notes")
+async def get_notes(db: Session = Depends(get_db)):
+    notes = list_notes(db)
+
+    return [
+        {
+            "note_id": str(note.note_id),
+            "transcript": note.transcript,
+            "notes": {
+                "summary": note.summary,
+                "key_points": note.key_points,
+                "action_items": note.action_items,
+            },
+            "created_at": note.created_at,
+        }
+        for note in notes
+    ]
