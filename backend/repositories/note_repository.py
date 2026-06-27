@@ -26,7 +26,11 @@ def list_notes(db):
     )
     
 def get_note(db, note_id):
-    pass
+    return (
+        db.query(Note)
+        .filter(Note.note_id==note_id)
+        .first()
+    )
 
 def delete_note(db, note_id):
     pass

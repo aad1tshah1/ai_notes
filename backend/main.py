@@ -52,7 +52,7 @@ async def create_note(audio_file: UploadFile = File(...), db: Session = Depends(
         os.remove(temp_audio_path)
 
 @app.get("/notes")
-async def get_notes(db: Session = Depends(get_db)):
+def get_notes(db: Session = Depends(get_db)):
     notes = list_notes(db)
 
     return [
@@ -68,3 +68,20 @@ async def get_notes(db: Session = Depends(get_db)):
         }
         for note in notes
     ]
+@app.get("/notes/{note_id}")
+def get_note_by_id(note_id: str, db: Session = Depends(get_db)):
+    note = get_note(db, note_id)
+    
+    if not note:
+        raise HTTPException(status_code=404, detail="Note not found")
+    
+    return {
+        "note_id": str(note.note_id),
+        "transcript": note.transcript,
+        "notes": {
+            "summary": note.summary,
+            "key_points": note.key_points,
+            "action_items": note.action_items,
+        },
+        "created_at": note.created_at,
+    }
