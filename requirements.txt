@@ -3,3 +3,6 @@ uvicorn
 python-multipart
 openai-whisper
 ffmpeg
+anthropic
+python-dotenv
+json

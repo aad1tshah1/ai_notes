@@ -2,7 +2,8 @@ from fastapi import FastAPI, File, UploadFile, HTTPException
 import tempfile
 import os
 
-from .services.transcription_service import transcribe_audio
+from services.transcription_service import transcribe_audio
+from services.summarisation_service import generate_meeting_notes
 
 app = FastAPI()
 
@@ -19,18 +20,20 @@ async def create_note(audio_file: UploadFile = File(...)):
         temp_audio_path = temp_audio.name
 
     try:
-        transcript = transcribe_audio(temp_audio_path)
+        transcript = transcribe_audio(temp_audio_path) 
 
+        notes = await generate_meeting_notes(transcript)
         return {
             "filename": audio_file.filename,
             "transcript": transcript,
-            "message": "transcription complete"
+            "notes": notes,
+            "message": "note generated"
         }
 
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=f"Transcription failed: {str(e)}"
+            detail=f"Failed to generate note: {str(e)}"
         )
 
     finally:
