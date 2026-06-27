@@ -4,5 +4,5 @@ python-multipart
 openai-whisper
 ffmpeg
 anthropic
-python-dotenv
-json
+sqlalchemy
+psycopg2-binary
