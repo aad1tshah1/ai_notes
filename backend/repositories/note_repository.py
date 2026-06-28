@@ -1,10 +1,5 @@
 from models.note import Note
 
-"""
-Responsibility:
-Save and retrieve notes from Postgres.
-"""
-
 def save_note(db, transcript, notes):
     note = Note (
         transcript=transcript,
@@ -28,7 +23,7 @@ def list_notes(db):
 def get_note(db, note_id):
     return (
         db.query(Note)
-        .filter(Note.note_id==note_id)
+        .filter(Note.note_id == note_id)
         .first()
     )
 

@@ -3,12 +3,9 @@ from datetime import datetime
 
 from sqlalchemy import DateTime, JSON, String, text
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column
 
-
-class Base(DeclarativeBase):
-    pass
-
+from models.base import Base
 
 class Note(Base):
     __tablename__ = "notes"
