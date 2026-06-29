@@ -1,34 +1,35 @@
 from models.note import Note
 
-def save_note(db, transcript, notes):
-    note = Note (
+def save_note(db, transcript, notes, user_id):
+    note = Note(
+        user_id=user_id,
         transcript=transcript,
         summary=notes["summary"],
         key_points=notes["key_points"],
         action_items=notes["action_items"],
     )
+
     db.add(note)
     db.commit()
     db.refresh(note)
     return note
 
-
-def list_notes(db):
-    return (
-        db.query(Note)
-        .order_by(Note.created_at.desc())
-        .all()
+def list_notes(db, user_id):
+    return (db.query(Note).filter(Note.user_id == user_id).all()
     )
     
-def get_note(db, note_id):
+def get_note(db, note_id, user_id):
     return (
         db.query(Note)
-        .filter(Note.note_id == note_id)
+        .filter(
+            Note.note_id == note_id,
+            Note.user_id == user_id,
+        )
         .first()
     )
 
-def delete_note(db, note_id):
-    note = get_note(db, note_id)
+def delete_note(db, note_id, user_id):
+    note = get_note(db, note_id, user_id)
 
     if note is None:
         return None

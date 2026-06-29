@@ -7,11 +7,14 @@ from services.transcription_service import transcribe_audio
 from services.summarisation_service import generate_meeting_notes
 from core.database import get_db
 from repositories.note_repository import save_note, list_notes, get_note, delete_note
+from core.security import get_current_user
+from models.user import User
 
 router = APIRouter(prefix="/notes", tags=["notes"])
 
 @router.post("")
-async def create_note(audio_file: UploadFile = File(...), db: Session = Depends(get_db)):
+async def create_note(
+    audio_file: UploadFile = File(...), current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as temp_audio:
         temp_audio.write(await audio_file.read())
         temp_audio_path = temp_audio.name
@@ -20,7 +23,7 @@ async def create_note(audio_file: UploadFile = File(...), db: Session = Depends(
         transcript = transcribe_audio(temp_audio_path) 
 
         notes = await generate_meeting_notes(transcript)
-        saved_note = save_note(db, transcript, notes)
+        saved_note = save_note(db, transcript, notes, current_user.user_id,)
 
         return {
                 "note_id": str(saved_note.note_id),
@@ -46,8 +49,8 @@ async def create_note(audio_file: UploadFile = File(...), db: Session = Depends(
 
 
 @router.get("")
-def get_notes(db: Session = Depends(get_db)):
-    notes = list_notes(db)
+def get_notes(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    notes = list_notes(db, current_user.user_id)
 
     return [
         {
@@ -64,8 +67,8 @@ def get_notes(db: Session = Depends(get_db)):
     ]
 
 @router.get("/{note_id}")
-def get_note_by_id(note_id: str, db: Session = Depends(get_db)):
-    note = get_note(db, note_id)
+def get_note_by_id(note_id: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    note = get_note(db, note_id, current_user.user_id)
     
     if not note:
         raise HTTPException(status_code=404, detail="Note not found")
@@ -82,8 +85,8 @@ def get_note_by_id(note_id: str, db: Session = Depends(get_db)):
     }
 
 @router.delete("/{note_id}")
-def delete_note_by_id(note_id: str, db: Session = Depends(get_db)):
-    note = delete_note(db, note_id)
+def delete_note_by_id(note_id: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    note = delete_note(db, note_id, current_user.user_id)
 
     if not note:
         raise HTTPException(status_code=404, detail="Note not found")
