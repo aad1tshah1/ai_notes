@@ -1,51 +1,35 @@
+import tempfile
+
 from fastapi import APIRouter, File, UploadFile, HTTPException, Depends
 from sqlalchemy.orm import Session
-import tempfile
-import os
-
-from services.transcription_service import transcribe_audio
-from services.summarisation_service import generate_meeting_notes
 from core.database import get_db
-from repositories.note_repository import save_note, list_notes, get_note, delete_note
+from repositories.note_repository import list_notes, get_note, delete_note
+from repositories.job_repository import create_job
 from core.security import get_current_user
 from models.user import User
+from worker.tasks import process_note
 
 router = APIRouter(prefix="/notes", tags=["notes"])
 
 @router.post("")
-async def create_note(
-    audio_file: UploadFile = File(...), current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+async def create_note(audio_file: UploadFile = File(...), current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    job = create_job(db, current_user.user_id)
+
     with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as temp_audio:
         temp_audio.write(await audio_file.read())
         temp_audio_path = temp_audio.name
 
-    try:
-        transcript = transcribe_audio(temp_audio_path) 
+    process_note.delay(
+        str(job.job_id),
+        str(current_user.user_id),
+        temp_audio_path,
+    )
 
-        notes = await generate_meeting_notes(transcript)
-        saved_note = save_note(db, transcript, notes, current_user.user_id,)
-
-        return {
-                "note_id": str(saved_note.note_id),
-                "filename": audio_file.filename,
-                "transcript": saved_note.transcript,
-                "notes": {
-                    "summary": saved_note.summary,
-                    "key_points": saved_note.key_points,
-                    "action_items": saved_note.action_items,
-                },
-                "created_at": saved_note.created_at,
-                "message": "note generated and saved"
-            }
-
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to generate note: {str(e)}"
-        )
-
-    finally:
-        os.remove(temp_audio_path)
+    return {
+        "job_id": str(job.job_id),
+        "status": job.status,
+        "message": "note processing started",
+    }
 
 
 @router.get("")
