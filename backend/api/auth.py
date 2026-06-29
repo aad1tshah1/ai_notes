@@ -5,19 +5,20 @@ from sqlalchemy.orm import Session
 from services.auth_service import hash_password, verify_password, create_access_token
 from core.database import get_db
 from repositories.user_repository import create_user, get_user_by_email
+from schemas.auth import RegisterRequest
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 @router.post("/register")
-def register_user(email: str, password: str, db: Session = Depends(get_db)):
-    existing_user = get_user_by_email(db, email)
+def register_user(request: RegisterRequest, db: Session = Depends(get_db)):
+    existing_user = get_user_by_email(db, request.email)
 
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
 
-    password_hash = hash_password(password)
+    password_hash = hash_password(request.password)
 
-    user = create_user(db, email, password_hash)
+    user = create_user(db, request.email, password_hash)
 
     return {
         "user_id": str(user.user_id),
