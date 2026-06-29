@@ -57,3 +57,16 @@ def mark_job_failed(db, job_id, user_id, error_message):
     db.refresh(job)
 
     return job
+
+def update_job_status(db, job_id, user_id, status):
+    job = get_job(db, job_id, user_id)
+
+    if not job:
+        return None
+
+    job.status = status
+
+    db.commit()
+    db.refresh(job)
+
+    return job
