@@ -2,14 +2,17 @@ type ButtonProps = {
   children: React.ReactNode;
   variant?: "primary" | "secondary";
   type?: "button" | "submit";
+  onClick?: () => void;
 };
 
 export function Button({
   children,
   variant = "primary",
   type = "button",
+  onClick,
 }: ButtonProps) {
-  const base = "rounded-full px-6 py-3 text-sm font-medium transition";
+  const base =
+    "rounded-full px-6 py-3 text-sm font-medium transition duration-200";
 
   const styles =
     variant === "primary"
@@ -17,7 +20,11 @@ export function Button({
       : "bg-white text-[#1D1D1F] shadow-sm hover:bg-[#F5F5F7]";
 
   return (
-    <button type={type} className={`${base} ${styles}`}>
+    <button
+      type={type}
+      onClick={onClick}
+      className={`${base} ${styles}`}
+    >
       {children}
     </button>
   );

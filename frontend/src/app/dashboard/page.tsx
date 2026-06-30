@@ -8,24 +8,27 @@ import { Card } from "@/components/Card";
 import { getNotes } from "@/services/notes";
 import type { Note } from "@/types/note";
 
-
 export default function DashboardPage() {
   const [notes, setNotes] = useState<Note[]>([]);
   const router = useRouter();
 
+  function goToUpload() {
+    router.push("/upload");
+  }
+
   useEffect(() => {
     async function loadNotes() {
-        try {
+      try {
         const data = await getNotes();
         setNotes(data);
-        } catch {
+      } catch {
         localStorage.removeItem("access_token");
         router.push("/login");
-        }
+      }
     }
 
     loadNotes();
-    }, [router]);
+  }, [router]);
 
   return (
     <main className="min-h-screen bg-[#F5F5F7] px-6 py-10 text-[#1D1D1F]">
@@ -46,7 +49,9 @@ export default function DashboardPage() {
             </p>
           </div>
 
-          <Button>Upload audio</Button>
+          <Button onClick={goToUpload}>
+            Upload audio
+          </Button>
         </header>
 
         <section className="mt-12">
@@ -70,7 +75,9 @@ export default function DashboardPage() {
               </p>
 
               <div className="mt-8">
-                <Button>Upload audio</Button>
+                <Button onClick={goToUpload}>
+                  Upload audio
+                </Button>
               </div>
             </Card>
           ) : (
