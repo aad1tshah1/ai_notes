@@ -1,4 +1,5 @@
 from models.note import Note
+from models.job import Job
 
 def save_note(db, transcript, notes, user_id):
     note = Note(
@@ -33,6 +34,12 @@ def delete_note(db, note_id, user_id):
 
     if note is None:
         return None
+
+    (
+        db.query(Job)
+        .filter(Job.note_id == note.note_id)
+        .update({Job.note_id: None})
+    )
 
     db.delete(note)
     db.commit()

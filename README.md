@@ -185,9 +185,9 @@ backend/
 
 ```json
 {
-  "job_id": "de97ccac-a113-42eb-80d1-f58b00530e2f",
+  "job_id": "example-job-id",
   "status": "completed",
-  "note_id": "4e8d1a67-f5bd-478a-b079-2a0c4cb2c356",
+  "note_id": "example-note-id",
   "completed_at": "2026-06-29T20:14:00Z"
 }
 ```
