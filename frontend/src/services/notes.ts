@@ -24,3 +24,9 @@ export async function createNote(file: File): Promise<CreateNoteResponse> {
 export async function getNote(noteId: string): Promise<Note> {
   return apiFetch(`/notes/${noteId}`);
 }
+
+export async function deleteNote(noteId: string) {
+  return apiFetch(`/notes/${noteId}`, {
+    method: "DELETE",
+  });
+}

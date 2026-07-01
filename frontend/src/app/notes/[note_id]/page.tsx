@@ -6,7 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Card } from "@/components/Card";
 import { Button } from "@/components/Button";
 import type { Note } from "@/types/note";
-import { getNote } from "@/services/notes";
+import { deleteNote, getNote } from "@/services/notes";
 
 export default function NotePage() {
   const params = useParams();
@@ -15,6 +15,7 @@ export default function NotePage() {
   const noteId = params.note_id as string;
 
   const [note, setNote] = useState<Note | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     async function loadNote() {
@@ -24,6 +25,22 @@ export default function NotePage() {
 
     loadNote();
   }, [noteId]);
+
+  async function handleDelete() {
+    const confirmed = window.confirm("Are you sure you want to delete this note?");
+
+    if (!confirmed) return;
+
+    setIsDeleting(true);
+
+    try {
+      await deleteNote(noteId);
+      router.push("/dashboard");
+    } catch {
+      setIsDeleting(false);
+      alert("Failed to delete note. Please try again.");
+    }
+  }
 
   if (!note) {
     return (
@@ -36,9 +53,15 @@ export default function NotePage() {
   return (
     <main className="min-h-screen bg-[#F5F5F7] px-6 py-10 text-[#1D1D1F]">
       <section className="mx-auto max-w-4xl">
-        <Button variant="secondary" onClick={() => router.push("/dashboard")}>
-          Back to notes
-        </Button>
+        <div className="flex items-center justify-between">
+          <Button variant="secondary" onClick={() => router.push("/dashboard")}>
+            Back to notes
+          </Button>
+
+          <Button variant="secondary" onClick={handleDelete}>
+            {isDeleting ? "Deleting..." : "Delete note"}
+          </Button>
+        </div>
 
         <div className="mt-10">
           <p className="text-sm font-medium text-[#6E6E73]">
